@@ -1,0 +1,35 @@
+crontask: '0 0 * * * *' # This would make it every hour
+
+# CronTask format:
+# * * * * * *
+# | | | | | |
+# | | | | | +---- Day of the Week   (1-7)
+# | | | | +------ Month             (1-12)
+# | | | +-------- Day of the Month  (1-31)
+# | | +---------- Hour              (0-23)
+# | +------------ Minute            (0-59)
+# +-------------- Second            (0-59)
+
+backup-format: '{DATE}'
+
+# The folder where to store the backups locally. May be relative or absolute.
+backup-path: 'dbackups'
+
+# The maximum backups stored. Will delete older backups when reached.
+max-backups: 24
+
+# The maximum number of full backups stored. Will delete older backups when reached.
+max-full-backups: 6
+
+# What you want in the backup, you can remove folders in the ignore section
+backup:
+    pluginjars: false # The .jar files for the plugins
+    pluginconfs: true # The data folder of each plugin
+    ignore: # Files to ignore and NOT backup
+        - 'logs'
+        - 'crash-reports'
+        - 'cache'
+        - 'dbackups'
+
+# Enable verbose logging
+debug: false

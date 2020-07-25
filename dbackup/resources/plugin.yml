@@ -1,0 +1,14 @@
+name: dBackup
+version: ${version}
+description: A custom backup plugin
+author: dmblc (Originally forked from EspiDev)
+
+main: xyz.dmblc.dbackup.dBackup
+api-version: 1.16
+
+commands:
+    dbackup:
+        description: "Base command for dBackup."
+        usage: "/dbackup [subcommand]"
+        aliases: dbu
+        permission: dbackup.admin
