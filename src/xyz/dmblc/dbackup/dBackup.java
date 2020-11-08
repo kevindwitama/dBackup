@@ -115,7 +115,7 @@ public class dBackup extends JavaPlugin {
 					}
 				}
 
-				if ((new Date().getTime() - mapBackups.lastKey()) <= 216000) {
+				if (!mapBackups.isEmpty() && (new Date().getTime() - mapBackups.lastKey()) <= 216000) {
 					getLogger().info("Last full backup is less than an hour old, skipping.");
 					return;
 				} else {
