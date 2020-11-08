@@ -1,6 +1,6 @@
 package xyz.dmblc.dbackup.listener;
 
-import org.bukkit.Chunk;
+import org.bukkit.ChunkSnapshot;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -29,7 +29,7 @@ public class ChunkUnloadListener implements Listener {
 
 	@EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
 	public void onChunkUnload(ChunkUnloadEvent event) {
-		Chunk c = event.getChunk();
+		ChunkSnapshot c = event.getChunk().getChunkSnapshot();
 		
 		if (dBackup.getPlugin().isDebugMode()) {
 			dBackup.getPlugin().getLogger().info("Chunk at" + c + " unloaded!");
