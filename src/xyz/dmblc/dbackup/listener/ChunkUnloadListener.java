@@ -1,11 +1,10 @@
 package xyz.dmblc.dbackup.listener;
 
-import org.bukkit.World;
-import org.bukkit.entity.Player;
+import org.bukkit.Chunk;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerChangedWorldEvent;
+import org.bukkit.event.world.ChunkUnloadEvent;
 
 import xyz.dmblc.dbackup.dBackup;
 
@@ -26,19 +25,18 @@ import xyz.dmblc.dbackup.dBackup;
 
 */
 
-public class PlayerChangedWorldListener implements Listener {
+public class ChunkUnloadListener implements Listener {
 
 	@EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
-	public void onPlayerChangedWorld(PlayerChangedWorldEvent event) {
-		Player p = event.getPlayer();
-		World w = event.getFrom();
+	public void onChunkUnload(ChunkUnloadEvent event) {
+		Chunk c = event.getChunk();
 		
 		if (dBackup.getPlugin().isDebugMode()) {
-			dBackup.getPlugin().getLogger().info("Player " + p.getName() + " changed world from "
-					+ w.getName() + " to " + p.getWorld().getName() + "!");
+			dBackup.getPlugin().getLogger().info("Chunk at" + c + " unloaded!");
 		}
-		if (!dBackup.getPlugin().getLoadedWorlds().contains(w)) {
-			dBackup.getPlugin().getLoadedWorlds().add(w);
+
+		if (!dBackup.getLoadedChunks().contains(c)) {
+			dBackup.getLoadedChunks().add(c);
 		}
 	}
 }

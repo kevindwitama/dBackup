@@ -1,5 +1,7 @@
 package xyz.dmblc.dbackup.listener;
 
+import org.bukkit.World;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -28,13 +30,16 @@ public class PlayerQuitListener implements Listener {
 
 	@EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
 	public void onPlayerQuit(PlayerQuitEvent event) {
+		Player p = event.getPlayer();
+		World w = p.getWorld();
+		
 		if (dBackup.getPlugin().isDebugMode()) {
-			dBackup.getPlugin().getLogger().info("Player " + event.getPlayer().getName() + " quit from world "
-					+ event.getPlayer().getWorld().getName() + "!");
+			dBackup.getPlugin().getLogger().info("Player " + p.getName() + " quit from world "
+					+ w.getName() + "!");
 		}
 		dBackup.getPlugin().setPlayerJoined(true);
-		if (!dBackup.getPlugin().getLoadedWorlds().contains(event.getPlayer().getWorld())) {
-			dBackup.getPlugin().getLoadedWorlds().add(event.getPlayer().getWorld());
+		if (!dBackup.getPlugin().getLoadedWorlds().contains(w)) {
+			dBackup.getPlugin().getLoadedWorlds().add(w);
 		}
 	}
 

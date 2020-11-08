@@ -1,6 +1,15 @@
 package xyz.dmblc.dbackup;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.World;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -12,14 +21,6 @@ import xyz.dmblc.dbackup.listener.PlayerChangedWorldListener;
 import xyz.dmblc.dbackup.listener.PlayerQuitListener;
 import xyz.dmblc.dbackup.util.BackupUtil;
 import xyz.dmblc.dbackup.util.CronUtil;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 /*
 	Copyright 2020 dmblc
@@ -56,7 +57,8 @@ public class dBackup extends JavaPlugin {
 	BukkitTask bukkitCronTask = null;
 
 	boolean playerJoined = true;
-	List<World> loadedWorlds;
+	static List<World> loadedWorlds;
+	static List<Chunk> loadedChunks;
 
 	PlayerQuitListener playerQuitListener = new PlayerQuitListener();
 	PlayerChangedWorldListener changeWorldListener = new PlayerChangedWorldListener();
@@ -165,9 +167,9 @@ public class dBackup extends JavaPlugin {
 	public List<World> getLoadedWorlds() {
 		return loadedWorlds;
 	}
-
-	public void setLoadedWorlds(List<World> loadedWorlds) {
-		this.loadedWorlds = loadedWorlds;
+	
+	public static List<Chunk> getLoadedChunks() {
+		return loadedChunks;
 	}
 
 	public String getCrontask() {
