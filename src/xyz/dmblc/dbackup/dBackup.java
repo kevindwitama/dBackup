@@ -9,7 +9,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChunkSnapshot;
 import org.bukkit.World;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -58,7 +57,6 @@ public class dBackup extends JavaPlugin {
 
 	boolean playerJoined = true;
 	static List<World> loadedWorlds;
-	static List<ChunkSnapshot> loadedChunks;
 
 	PlayerQuitListener playerQuitListener = new PlayerQuitListener();
 	PlayerChangedWorldListener changeWorldListener = new PlayerChangedWorldListener();
@@ -168,10 +166,6 @@ public class dBackup extends JavaPlugin {
 		return loadedWorlds;
 	}
 	
-	public static List<ChunkSnapshot> getLoadedChunks() {
-		return loadedChunks;
-	}
-
 	public String getCrontask() {
 		return crontask;
 	}

@@ -1,9 +1,14 @@
 package xyz.dmblc.dbackup.util;
 
+import org.bukkit.Bukkit;
+import org.bukkit.World;
+
+import xyz.dmblc.dbackup.dBackup;
+
 import java.io.File;
+import java.io.IOException;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -14,14 +19,6 @@ import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
-import org.bukkit.Bukkit;
-import org.bukkit.ChunkSnapshot;
-import org.bukkit.World;
-
-import com.google.common.io.Files;
-
-import xyz.dmblc.dbackup.dBackup;
 
 /*
 	Copyright 2020 dmblc
@@ -46,7 +43,7 @@ public class BackupUtil {
 
 	// delete old backups (when limit reached)
 	private static void checkMaxBackups(boolean doAll) {
-		int numBackups = 0;
+		int noBackups = 0;
 		int maxBackups;
 		SortedMap<Long, File> mapBackups = new TreeMap<>(); // oldest files to newest
 
@@ -54,7 +51,7 @@ public class BackupUtil {
 			maxBackups = dBackup.getPlugin().getMaxBackups();
 			for (File f : dBackup.getPlugin().getBackupPath().listFiles()) {
 				if (f.getName().endsWith(".zip") && !f.getName().startsWith("FULL-")) {
-					numBackups++;
+					noBackups++;
 					mapBackups.put(f.lastModified(), f);
 				}
 			}
@@ -62,13 +59,13 @@ public class BackupUtil {
 			maxBackups = dBackup.getPlugin().getMaxFullBackups();
 			for (File f : dBackup.getPlugin().getBackupPath().listFiles()) {
 				if (f.getName().endsWith(".zip") && f.getName().startsWith("FULL-")) {
-					numBackups++;
+					noBackups++;
 					mapBackups.put(f.lastModified(), f);
 				}
 			}
 		}
 
-		while (numBackups-- >= maxBackups) {
+		while (noBackups-- >= maxBackups) {
 			dBackup.getPlugin().getLogger()
 					.info("Deleting old backup " + mapBackups.get(mapBackups.firstKey()).getName() + "...");
 			mapBackups.get(mapBackups.firstKey()).delete();
@@ -125,111 +122,60 @@ public class BackupUtil {
 			// zip
 			String fileName = dBackup.getPlugin().getBackupFormat().replace("{DATE}",
 					new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").format(new Date()));
-
-			if (!doAll) {
-				for (World w : Bukkit.getWorlds()) {
-					AtomicBoolean saved = new AtomicBoolean(false);
-					Bukkit.getScheduler().runTask(dBackup.getPlugin(), () -> {
-						w.save();
-						saved.set(true);
-					});
-
-					while (!saved.get())
-						Thread.sleep(500);
-					
-					w.setAutoSave(false); // make sure autosave doesn't screw everything over
-					
-					for (ChunkSnapshot c : dBackup.getLoadedChunks()) {
-						if (!Bukkit.getWorld(c.getWorldName()).equals(w)) {
-							return;
-						}
-
-						int regionX = c.getX() >> 5;
-						int regionZ = c.getZ() >> 5;
-
-						String regionName = "r." + regionX + "." + regionZ + ".mcr";
-
-						File worldFolder = w.getWorldFolder();
-
-						String worldPath = Paths.get(currentWorkingDirectory.toURI())
-								.relativize(Paths.get(worldFolder.toURI())).toString();
-
-						if (worldPath.endsWith("/.")) {// 1.16 world folders end with /. for some reason
-							worldPath = worldPath.substring(0, worldPath.length() - 2);
-							worldFolder = new File(worldPath);
-						}
-						
-						dBackup.getPlugin().getLogger().info("Backing up " + worldPath + "...");
-
-						File sourceFile = new File(w.getWorldFolder() + "/" + "region/" + regionName);
-						File destFile = new File(
-								dBackup.getPlugin().getBackupPath() + "/" + worldPath + "/" + "region/" + regionName);
-
-						Files.copy(sourceFile, destFile);
-
-						// dfs all other files
-						dBackup.getPlugin().getLogger().info("Backing up other files...");
-					}
-					w.setAutoSave(true);
-				}
-			} else if (doAll) {
+			;
+			if (doAll) {
 				fileName = "FULL-" + fileName;
+			}
+			FileOutputStream fos = new FileOutputStream(dBackup.getPlugin().getBackupPath() + "/" + fileName + ".zip");
+			ZipOutputStream zipOut = new ZipOutputStream(fos);
 
-				FileOutputStream fos = new FileOutputStream(currentWorkingDirectory + "/" + fileName + ".zip");
-				ZipOutputStream zipOut = new ZipOutputStream(fos);
+			// backup worlds first
+			for (World w : Bukkit.getWorlds()) {
+				File worldFolder = w.getWorldFolder();
 
-				// backup worlds first
-				for (World w : Bukkit.getWorlds()) {
-					File worldFolder = w.getWorldFolder();
-
-					String worldPath = Paths.get(currentWorkingDirectory.toURI())
-							.relativize(Paths.get(worldFolder.toURI())).toString();
-					if (worldPath.endsWith("/.")) {// 1.16 world folders end with /. for some reason
-						worldPath = worldPath.substring(0, worldPath.length() - 2);
-						worldFolder = new File(worldPath);
-					}
-
-					// check if world is in ignored list
-					boolean skipWorld = false;
-					for (File f : dBackup.getPlugin().getIgnoredFiles()) {
-						if (f.getAbsolutePath().equals(worldFolder.getAbsolutePath())) {
-							skipWorld = true;
-							break;
-						}
-					}
-					if (skipWorld)
-						continue;
-
-					AtomicBoolean saved = new AtomicBoolean(false);
-					Bukkit.getScheduler().runTask(dBackup.getPlugin(), () -> {
-						w.save();
-						saved.set(true);
-					});
-
-					while (!saved.get())
-						Thread.sleep(500);
-
-					w.setAutoSave(false); // make sure autosave doesn't screw everything over
-					dBackup.getPlugin().getLogger().info("Backing up " + worldPath + "...");
-					zipFile(worldFolder, worldPath, zipOut);
-					w.setAutoSave(true);
-
-					// ignore in dfs
-					tempIgnore.add(worldFolder);
-					dBackup.getPlugin().ignoredFiles.add(worldFolder);
+				String worldPath = Paths.get(currentWorkingDirectory.toURI()).relativize(Paths.get(worldFolder.toURI()))
+						.toString();
+				if (worldPath.endsWith("/.")) {// 1.16 world folders end with /. for some reason
+					worldPath = worldPath.substring(0, worldPath.length() - 2);
+					worldFolder = new File(worldPath);
 				}
 
-				// dfs all other files
-				dBackup.getPlugin().getLogger().info("Backing up other files...");
-				zipFile(currentWorkingDirectory, "", zipOut);
-				zipOut.close();
-				fos.close();
+				// check if world is in ignored list
+				boolean skip = false;
+				for (File f : dBackup.getPlugin().getIgnoredFiles()) {
+					if (f.getAbsolutePath().equals(worldFolder.getAbsolutePath())) {
+						skip = true;
+						break;
+					}
+				}
+				if (skip)
+					continue;
 
-				dBackup.getPlugin().getLogger().info("Moving zip...");
-				File result = new File(currentWorkingDirectory + "/" + fileName + ".zip");
-				Files.copy(result, dBackup.getPlugin().getBackupPath());
-				result.delete();
+				AtomicBoolean saved = new AtomicBoolean(false);
+				Bukkit.getScheduler().runTask(dBackup.getPlugin(), () -> {
+					w.save();
+					saved.set(true);
+				});
+
+				while (!saved.get())
+					Thread.sleep(500);
+
+				w.setAutoSave(false); // make sure autosave doesn't screw everything over
+				dBackup.getPlugin().getLogger().info("Backing up " + worldPath + "...");
+				zipFile(worldFolder, worldPath, zipOut);
+				w.setAutoSave(true);
+
+				// ignore in dfs
+				tempIgnore.add(worldFolder);
+				dBackup.getPlugin().ignoredFiles.add(worldFolder);
 			}
+
+			// dfs all other files
+			dBackup.getPlugin().getLogger().info("Backing up other files...");
+			zipFile(currentWorkingDirectory, "", zipOut);
+			zipOut.close();
+			fos.close();
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
