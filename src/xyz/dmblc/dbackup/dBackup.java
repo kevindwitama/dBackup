@@ -106,6 +106,7 @@ public class dBackup extends JavaPlugin {
 			@Override
 			public void run() {
 				SortedMap<Long, File> mapBackups = new TreeMap<>(); // oldest files to newest
+				int timeSinceLastBackup = 216001;
 
 				for (File f : getBackupPath().listFiles()) {
 					if (f.getName().endsWith(".zip") && f.getName().startsWith("FULL-")) {
@@ -113,12 +114,16 @@ public class dBackup extends JavaPlugin {
 					}
 				}
 
-				if (!mapBackups.isEmpty() && (new Date().getTime() - mapBackups.lastKey()) <= 216000) {
-					getLogger().info("Last full backup is less than an hour old, skipping.");
-					return;
+				if (!mapBackups.isEmpty()) {
+					timeSinceLastBackup = (int) ((new Date().getTime()) - mapBackups.lastKey());
 				} else {
-					getLogger().info("Starting full backup for current server session...");
-					BackupUtil.doBackup(true);
+					if (timeSinceLastBackup <= 216000) {
+						getLogger().info("Starting full backup for current server session...");
+						BackupUtil.doBackup(true);
+					} else {
+						getLogger().info("Last full backup is less than an hour old, skipping.");
+						return;
+					}
 				}
 			}
 		};
@@ -165,7 +170,7 @@ public class dBackup extends JavaPlugin {
 	public List<World> getLoadedWorlds() {
 		return loadedWorlds;
 	}
-	
+
 	public String getCrontask() {
 		return crontask;
 	}
