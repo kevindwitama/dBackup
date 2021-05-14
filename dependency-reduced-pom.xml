@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>xyz.dmblc</groupId>
   <artifactId>dbackup</artifactId>
-  <version>1.7.2</version>
+  <version>1.7.4</version>
   <licenses>
     <license>
       <name>The Apache License, Version 2.0</name>
@@ -84,7 +84,7 @@
     <dependency>
       <groupId>com.destroystokyo.paper</groupId>
       <artifactId>paper-api</artifactId>
-      <version>1.16.4-R0.1-SNAPSHOT</version>
+      <version>1.16.5-R0.1-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>

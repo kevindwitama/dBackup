@@ -21,6 +21,9 @@ max-backups: 24
 # The maximum number of full backups stored. Will delete older backups when reached.
 max-full-backups: 6
 
+# Skip full backup if the following amount of time in seconds has not passed since last full backup.
+time-between-full-backups: 21600
+
 # What you want in the backup, you can remove folders in the ignore section
 backup:
     pluginjars: false # The .jar files for the plugins

@@ -45,6 +45,7 @@ public class dBackup extends JavaPlugin {
 	File backupPath;
 	int maxBackups;
 	int maxFullBackups;
+	int timeBetweenFullBackups;
 
 	boolean backupPluginJars, backupPluginConfs;
 
@@ -85,6 +86,7 @@ public class dBackup extends JavaPlugin {
 		backupPath = new File(getConfig().getString("backup-path"));
 		maxBackups = getConfig().getInt("max-backups");
 		maxFullBackups = getConfig().getInt("max-full-backups");
+		timeBetweenFullBackups = getConfig().getInt("time-between-full-backups");
 		backupPluginJars = getConfig().getBoolean("backup.pluginjars");
 		backupPluginConfs = getConfig().getBoolean("backup.pluginconfs");
 		filesToIgnore = getConfig().getStringList("backup.ignore");
@@ -106,7 +108,7 @@ public class dBackup extends JavaPlugin {
 			@Override
 			public void run() {
 				SortedMap<Long, File> mapBackups = new TreeMap<>(); // oldest files to newest
-				int timeSinceLastBackup = 216001;
+				int timeSinceLastBackup = timeBetweenFullBackups;
 
 				for (File f : getBackupPath().listFiles()) {
 					if (f.getName().endsWith(".zip") && f.getName().startsWith("FULL-")) {
@@ -117,11 +119,11 @@ public class dBackup extends JavaPlugin {
 				if (!mapBackups.isEmpty()) {
 					timeSinceLastBackup = (int) ((new Date().getTime()) - mapBackups.lastKey());
 				} else {
-					if (timeSinceLastBackup <= 216000) {
+					if (timeSinceLastBackup <= timeBetweenFullBackups) {
 						getLogger().info("Starting full backup for current server session...");
 						BackupUtil.doBackup(true);
 					} else {
-						getLogger().info("Last full backup is less than an hour old, skipping.");
+						getLogger().info("Last full backup is less than " + timeBetweenFullBackups + " seconds old, skipping.");
 						return;
 					}
 				}
